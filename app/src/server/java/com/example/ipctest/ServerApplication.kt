@@ -11,7 +11,6 @@ class ServerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val service = startService(Intent(this, RemoteService::class.java))
         Executors.newSingleThreadExecutor().execute {
             while (true) {
                 RemoteService.notifyTime()
