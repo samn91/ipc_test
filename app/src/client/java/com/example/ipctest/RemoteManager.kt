@@ -46,7 +46,7 @@ class RemoteManager {
 
         val stub = ListenerProxy(listener, executor)
         listenerMap[listener] = stub
-
+        stub.isRegistered = true
         try {
             iRemoteService?.registerCallback(stub)
         } catch (e: RemoteException) {
@@ -59,7 +59,7 @@ class RemoteManager {
         try {
             val removedListener = listenerMap.remove(listener)
                 ?: throw IllegalArgumentException("Listener was not registered.")
-            removedListener.unregister()
+            removedListener.isRegistered = false
             iRemoteService?.unregisterCallback(removedListener)
         } catch (e: RemoteException) {
             e.printStackTrace()
@@ -71,17 +71,14 @@ class RemoteManager {
         private val listener: IListenerInterface, private val executor: Executor
     ) : IListenerInterface.Stub() {
 
-        private var isUnregistered = false
+         var isRegistered = false
         override fun onEvent(time: Long) {
 
             executor.execute {
-                if (isUnregistered)
+                if (isRegistered)
                     listener.onEvent(time)
             }
         }
 
-        fun unregister(): Unit {
-            isUnregistered = true
-        }
     }
 }
